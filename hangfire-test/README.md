@@ -18,3 +18,7 @@ mysql -u root -p
 USE hangfire_db;
 SHOW TABLES;
 ```
+
+## Swagger
+
+http://localhost:5555/swagger/index.html

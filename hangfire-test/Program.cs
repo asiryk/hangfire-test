@@ -24,13 +24,4 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
-// app.MapGet("/", () => 
-// {
-//     var v = 5;
-//     Console.WriteLine(v);
-//     return "Hello World!";
-// }
-
-// );
-
 app.Run();
