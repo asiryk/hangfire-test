@@ -1,4 +1,5 @@
 using Hangfire;
+using HangfireDemo.Jobs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,7 +15,7 @@ namespace HangfireDemo.AddControllers
         public ActionResult CreateBackgroundJob()
         {
             Console.WriteLine("enter background job");
-            BackgroundJob.Enqueue(() => Console.WriteLine("background job triggered"));
+            BackgroundJob.Enqueue<TestJob>((x) => x.WriteLog("background job triggered"));
             return Ok();
         }
 
@@ -25,7 +26,7 @@ namespace HangfireDemo.AddControllers
             Console.WriteLine("enter scheduled job");
             var scheduleDateTime = DateTime.UtcNow.AddSeconds(5);
             var dateTimeOffset = new DateTimeOffset(scheduleDateTime);
-            BackgroundJob.Schedule(() => Console.WriteLine("scheduled job triggered"), dateTimeOffset);
+            BackgroundJob.Schedule<TestJob>((x) => x.WriteLog("scheduled job triggered"), dateTimeOffset);
             return Ok();
         }
 
@@ -37,10 +38,10 @@ namespace HangfireDemo.AddControllers
             var scheduleDateTime = DateTime.UtcNow.AddSeconds(5);
             var dateTimeOffset = new DateTimeOffset(scheduleDateTime);
 
-            var job1 = BackgroundJob.Schedule(() => Console.WriteLine("start job 1"), dateTimeOffset);
-            var job2 = BackgroundJob.ContinueJobWith(job1, () => Console.WriteLine("continue job 1"));
-            var job3 = BackgroundJob.ContinueJobWith(job2, () => Console.WriteLine("continue job 2"));
-            var job4 = BackgroundJob.ContinueJobWith(job3, () => Console.WriteLine("continue job 3"));
+            var job1 = BackgroundJob.Schedule<TestJob>((x) => x.WriteLog("start job 1"), dateTimeOffset);
+            var job2 = BackgroundJob.ContinueJobWith<TestJob>(job1, (x) => x.WriteLog("continue job 1"));
+            var job3 = BackgroundJob.ContinueJobWith<TestJob>(job2, (x) => x.WriteLog("continue job 2"));
+            var job4 = BackgroundJob.ContinueJobWith<TestJob>(job3, (x) => x.WriteLog("continue job 3"));
             return Ok();
         }
 
