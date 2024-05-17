@@ -1,5 +1,6 @@
 using Hangfire;
 using Hangfire.MySql;
+using HangfireDemo.Jobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +8,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddTransient<TestJob>(); // add it just in case
 builder.Services.AddHangfire((sp, config) =>
 {
     var connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString("DbConnection");
