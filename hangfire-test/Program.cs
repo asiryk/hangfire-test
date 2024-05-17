@@ -23,5 +23,6 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+app.UseHangfireDashboard();
 
 app.Run();

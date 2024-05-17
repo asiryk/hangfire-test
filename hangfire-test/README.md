@@ -22,3 +22,7 @@ SHOW TABLES;
 ## Swagger
 
 http://localhost:5555/swagger/index.html
+
+## Dashboard
+
+http://localhost:5555/hangfire
