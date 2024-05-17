@@ -11,7 +11,11 @@ builder.Services.AddHangfire((sp, config) =>
 {
     var connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString("DbConnection");
     var mysqlStorage = new MySqlStorage(connectionString, new MySqlStorageOptions());
-    config.UseStorage(mysqlStorage);
+    config
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UseStorage(mysqlStorage);
 });
 builder.Services.AddHangfireServer();
 

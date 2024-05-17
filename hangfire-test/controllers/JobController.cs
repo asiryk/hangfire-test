@@ -1,6 +1,5 @@
 using Hangfire;
 using HangfireDemo.Jobs;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HangfireDemo.AddControllers
