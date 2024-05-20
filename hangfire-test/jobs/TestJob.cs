@@ -3,13 +3,9 @@ namespace HangfireDemo.Jobs;
 public class TestJob
 {
 
-    private readonly ILogger logger;
-
-    public TestJob(ILogger<TestJob> logger) => this.logger = logger;
-
-    public void WriteLog(string logMessage)
+    public void GetAsync(string path)
     {
-        logger.LogInformation($"{DateTime.Now:yyyy-MM-dd hh:mm:ss tt} {logMessage}");
-    }
 
+        new HttpClient().GetAsync("http://localhost:3000/testJob/" + path);
+    }
 }

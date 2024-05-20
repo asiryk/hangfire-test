@@ -24,8 +24,8 @@ namespace HangfireDemo.AddControllers
         public ActionResult CreateBackgroundJob()
         {
             Console.WriteLine("enter background job");
-            backgroundJobs.Enqueue<TestJob>((x) => x.WriteLog("testJob: background job triggered"));
-            backgroundJobs.Enqueue(() => Console.WriteLine("console: background job triggered"));
+            backgroundJobs.Enqueue(() => new HttpClient().GetAsync("http://localhost:3000/background"));
+            backgroundJobs.Enqueue<TestJob>((x) => x.GetAsync("background"));
             return Ok();
         }
 
@@ -36,8 +36,9 @@ namespace HangfireDemo.AddControllers
             Console.WriteLine("enter scheduled job");
             var scheduleDateTime = DateTime.UtcNow.AddSeconds(5);
             var dateTimeOffset = new DateTimeOffset(scheduleDateTime);
-            backgroundJobs.Schedule<TestJob>((x) => x.WriteLog("testJob: scheduled job triggered"), dateTimeOffset);
-            backgroundJobs.Schedule(() => Console.WriteLine("console: scheduled job triggered"), dateTimeOffset);
+
+            backgroundJobs.Schedule(() => new HttpClient().GetAsync("http://localhost:3000/scheduled"), dateTimeOffset);
+            backgroundJobs.Schedule<TestJob>((x) => x.GetAsync("scheduled"), dateTimeOffset);
             return Ok();
         }
 
@@ -49,15 +50,21 @@ namespace HangfireDemo.AddControllers
             var scheduleDateTime = DateTime.UtcNow.AddSeconds(5);
             var dateTimeOffset = new DateTimeOffset(scheduleDateTime);
 
-            var job1 = backgroundJobs.Schedule<TestJob>((x) => x.WriteLog("testJob: start job 1"), dateTimeOffset);
-            var job2 = backgroundJobs.ContinueJobWith<TestJob>(job1, (x) => x.WriteLog("testJob: continue job 1"));
-            var job3 = backgroundJobs.ContinueJobWith<TestJob>(job2, (x) => x.WriteLog("testJob: continue job 2"));
-            var job4 = backgroundJobs.ContinueJobWith<TestJob>(job3, (x) => x.WriteLog("testJob: continue job 3"));
+            {
+                var job1 = backgroundJobs.Schedule(() => new HttpClient().GetAsync("http://localhost:3000/continuation/1"), dateTimeOffset);
+                var job2 = backgroundJobs.ContinueJobWith(job1, () => new HttpClient().GetAsync("http://localhost:3000/continuation/2"));
+                var job3 = backgroundJobs.ContinueJobWith(job2, () => new HttpClient().GetAsync("http://localhost:3000/continuation/3"));
+                var job4 = backgroundJobs.ContinueJobWith(job3, () => new HttpClient().GetAsync("http://localhost:3000/continuation/4"));
 
-            var job1c = backgroundJobs.Schedule(() => Console.WriteLine("console: start job 1"), dateTimeOffset);
-            var job2c = backgroundJobs.ContinueJobWith(job1, () => Console.WriteLine("console: continue job 1"));
-            var job3c = backgroundJobs.ContinueJobWith(job2, () => Console.WriteLine("console: continue job 2"));
-            var job4c = backgroundJobs.ContinueJobWith(job3, () => Console.WriteLine("console: continue job 3"));
+            }
+
+            {
+                var job1 = backgroundJobs.Schedule<TestJob>((x) => x.GetAsync("continuation/1"), dateTimeOffset);
+                var job2 = backgroundJobs.ContinueJobWith<TestJob>(job1, (x) => x.GetAsync("continuation/2"));
+                var job3 = backgroundJobs.ContinueJobWith<TestJob>(job2, (x) => x.GetAsync("continuation/3"));
+                var job4 = backgroundJobs.ContinueJobWith<TestJob>(job3, (x) => x.GetAsync("continuation/4"));
+            }
+
             return Ok();
         }
 
@@ -65,8 +72,8 @@ namespace HangfireDemo.AddControllers
         [Route("CreateRecurringJob")]
         public ActionResult CreateRecurringJob()
         {
-            recurringJobs.AddOrUpdate<TestJob>("RecurringJob1TestJob", (x) => x.WriteLog("testJob: recurring job triggered"), "* * * * *");
-            recurringJobs.AddOrUpdate("RecurringJob1Console", () => Console.WriteLine("console: recurring job triggered"), "* * * * *");
+            recurringJobs.AddOrUpdate("RecurringJob1", () => new HttpClient().GetAsync("http://localhost:3000/recurring"), "* * * * *");
+            recurringJobs.AddOrUpdate<TestJob>("RecurringJob1TestJob", (x) => x.GetAsync("recurring"), "* * * * *");
             return Ok();
         }
     }
