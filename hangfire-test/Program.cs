@@ -11,7 +11,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<TestJob>(); // add it just in case
 builder.Services.AddHangfire((sp, config) =>
 {
-    var connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString("DbConnection");
+    var connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString("HangfireMySQL");
     var mysqlStorage = new MySqlStorage(connectionString, new MySqlStorageOptions());
     config
         .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
@@ -26,8 +26,6 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseHttpsRedirection();
-app.UseAuthorization();
 app.MapControllers();
 app.UseHangfireDashboard();
 
