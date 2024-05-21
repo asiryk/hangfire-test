@@ -31,6 +31,9 @@ let connection = new HubConnectionBuilder()
 connection.on("ReceiveMessage", (name, message) => {
   console.log(name, message);
 });
+connection.on("NotifyClient", (message) => {
+  console.log(message);
+});
 
 connection
   .start()
