@@ -1,6 +1,6 @@
 services:
   mysql:
-    build: .
+    image: mysql:latest
     container_name: mysql-hangfire
     environment:
       MYSQL_ROOT_PASSWORD: password
@@ -9,6 +9,27 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+  postgres:
+    image: postgres:latest
+    container_name: postgres-hangfire
+    environment:
+      POSTGRES_DB: hangfire_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5454:80"
+    depends_on:
+      - postgres
 
 volumes:
   mysql_data:
+  postgres_data:

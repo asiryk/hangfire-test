@@ -2,6 +2,7 @@ using Hangfire;
 using Hangfire.MySql;
 using HangfireTest.SignalR;
 using HangfireTest.Jobs;
+using Hangfire.PostgreSql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,14 +26,29 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddHangfire((sp, config) =>
 {
+    // Mysql -- Works SUPER BAD
     // var connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString("HangfireMySQL");
     // var mysqlStorage = new MySqlStorage(connectionString, new MySqlStorageOptions());
+    // config
+    //     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    //     .UseSimpleAssemblyNameTypeSerializer()
+    //     .UseRecommendedSerializerSettings()
+    //     .UseStorage(mysqlStorage);
+
+    // Postgres
+    var connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString("HangfirePostgres");
     config
         .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
         .UseSimpleAssemblyNameTypeSerializer()
         .UseRecommendedSerializerSettings()
-        .UseInMemoryStorage();
-        // .UseStorage(mysqlStorage);
+        .UsePostgreSqlStorage(c => c.UseNpgsqlConnection(connectionString));
+
+    // In Memory
+    // config
+    //     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    //     .UseSimpleAssemblyNameTypeSerializer()
+    //     .UseRecommendedSerializerSettings()
+    //     .UseInMemoryStorage();
 });
 builder.Services.AddHangfireServer();
 
