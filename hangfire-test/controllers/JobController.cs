@@ -1,6 +1,8 @@
 using Hangfire;
 using HangfireTest.Jobs;
+using HangfireTest.SignalR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace HangfireTest.Controller;
 
@@ -12,12 +14,19 @@ public class JobController : ControllerBase
     private readonly IBackgroundJobClient backgroundJobs;
     private readonly IRecurringJobManager recurringJobs;
     private readonly ILogger logger;
+    private readonly IHubContext<JobHub, IHubClient> hubContext;
 
-    public JobController(IBackgroundJobClient backgroundJobClient, IRecurringJobManager recurringJobManager, ILogger<JobController> logger)
+    public JobController(
+        IBackgroundJobClient backgroundJobClient,
+        IRecurringJobManager recurringJobManager,
+        ILogger<JobController> logger,
+        IHubContext<JobHub, IHubClient> hubContext
+    )
     {
         backgroundJobs = backgroundJobClient;
         recurringJobs = recurringJobManager;
         this.logger = logger;
+        this.hubContext = hubContext;
     }
 
     [HttpPost]
@@ -25,6 +34,7 @@ public class JobController : ControllerBase
     public ActionResult CreateBackgroundJob()
     {
         logger.LogInformation("background job");
+        notifyClient();
         backgroundJobs.Enqueue<TestJob>((x) => x.GetAsync("background"));
         return Ok();
     }
@@ -65,5 +75,10 @@ public class JobController : ControllerBase
         logger.LogInformation("recurring job");
         recurringJobs.AddOrUpdate<TestJob>("RecurringJob1TestJob", (x) => x.GetAsync("recurring"), "* * * * *");
         return Ok();
+    }
+
+    private void notifyClient()
+    {
+        hubContext.Clients.All.NotifyClient("message from controller");
     }
 }

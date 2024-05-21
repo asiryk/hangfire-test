@@ -1,9 +1,25 @@
+using Hangfire;
+using HangfireTest.SignalR;
+using Microsoft.AspNetCore.SignalR;
+
 namespace HangfireTest.Jobs;
 
-public class TestJob
+public class TestJob : JobActivator
 {
-    public void GetAsync(string path)
+
+    private readonly ILogger logger;
+    private readonly IHubContext<JobHub, IHubClient> hubContext;
+
+    public TestJob(ILogger<TestJob> logger, IHubContext<JobHub, IHubClient> hubContext)
     {
-        new HttpClient().GetAsync("http://localhost:3000/mySuperJob/" + path);
+        this.logger = logger;
+        this.hubContext = hubContext;
+    }
+
+    public void GetAsync(string name)
+    {
+        var msg = string.Format("the job \"{0}\" has triggered", name);
+        logger.LogInformation(msg);
+        hubContext.Clients.All.NotifyClient(msg);
     }
 }
