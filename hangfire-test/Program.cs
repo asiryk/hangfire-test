@@ -1,11 +1,26 @@
 using Hangfire;
 using Hangfire.MySql;
+using HangfireDemo.SignalR;
+using Microsoft.AspNetCore.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSignalR();
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(
+        builder =>
+        {
+            builder
+                .WithOrigins("http://localhost:5173")
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
+        });
+});
 
 builder.Services.AddHangfire((sp, config) =>
 {
@@ -26,5 +41,7 @@ app.UseSwaggerUI();
 
 app.MapControllers();
 app.UseHangfireDashboard();
+app.UseCors();
+app.MapHub<JobHub>("/jobHub");
 
 app.Run();

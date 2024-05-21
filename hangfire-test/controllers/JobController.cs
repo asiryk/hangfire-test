@@ -2,7 +2,7 @@ using Hangfire;
 using HangfireDemo.Jobs;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HangfireDemo.AddControllers
+namespace HangfireDemo.Controller
 {
 
     [Route("api/[controller]")]
