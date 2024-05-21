@@ -1,10 +1,12 @@
 using Hangfire;
 using Hangfire.MySql;
-using HangfireDemo.SignalR;
-using Microsoft.AspNetCore.SignalR;
+using HangfireTest.SignalR;
+using HangfireTest.Jobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var _j1 = new TestJob(); // looks like AddTransient is not enough
+builder.Services.AddTransient<TestJob>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
