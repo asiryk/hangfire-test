@@ -1,5 +1,4 @@
 using Hangfire;
-using HangfireDemo.Jobs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HangfireDemo.Controller
@@ -36,7 +35,7 @@ namespace HangfireDemo.Controller
         {
             logger.LogInformation("background job");
             backgroundJobs.Enqueue(() => new HttpClient().GetAsync("http://localhost:3000/background"));
-            backgroundJobs.Enqueue<TestJob>((x) => x.GetAsync("background"));
+            backgroundJobs.Enqueue<MySuperJob>((x) => x.GetAsync("background"));
             return Ok();
         }
 
@@ -49,7 +48,7 @@ namespace HangfireDemo.Controller
             var dateTimeOffset = new DateTimeOffset(scheduleDateTime);
 
             backgroundJobs.Schedule(() => new HttpClient().GetAsync("http://localhost:3000/scheduled"), dateTimeOffset);
-            backgroundJobs.Schedule<TestJob>((x) => x.GetAsync("scheduled"), dateTimeOffset);
+            backgroundJobs.Schedule<MySuperJob>((x) => x.GetAsync("scheduled"), dateTimeOffset);
             return Ok();
         }
 
@@ -70,10 +69,10 @@ namespace HangfireDemo.Controller
             }
 
             {
-                var job1 = backgroundJobs.Schedule<TestJob>((x) => x.GetAsync("continuation/1"), dateTimeOffset);
-                var job2 = backgroundJobs.ContinueJobWith<TestJob>(job1, (x) => x.GetAsync("continuation/2"));
-                var job3 = backgroundJobs.ContinueJobWith<TestJob>(job2, (x) => x.GetAsync("continuation/3"));
-                var job4 = backgroundJobs.ContinueJobWith<TestJob>(job3, (x) => x.GetAsync("continuation/4"));
+                var job1 = backgroundJobs.Schedule<MySuperJob>((x) => x.GetAsync("continuation/1"), dateTimeOffset);
+                var job2 = backgroundJobs.ContinueJobWith<MySuperJob>(job1, (x) => x.GetAsync("continuation/2"));
+                var job3 = backgroundJobs.ContinueJobWith<MySuperJob>(job2, (x) => x.GetAsync("continuation/3"));
+                var job4 = backgroundJobs.ContinueJobWith<MySuperJob>(job3, (x) => x.GetAsync("continuation/4"));
             }
 
             return Ok();
