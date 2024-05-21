@@ -25,8 +25,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddHangfire((sp, config) =>
 {
-    var connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString("HangfireMySQL");
-    var mysqlStorage = new MySqlStorage(connectionString, new MySqlStorageOptions());
+    // var connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString("HangfireMySQL");
+    // var mysqlStorage = new MySqlStorage(connectionString, new MySqlStorageOptions());
     config
         .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
         .UseSimpleAssemblyNameTypeSerializer()
