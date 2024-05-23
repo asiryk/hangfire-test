@@ -1,4 +1,5 @@
 using Hangfire;
+using HangfireTest.Db;
 using HangfireTest.Jobs;
 using HangfireTest.SignalR;
 using Microsoft.AspNetCore.Mvc;
@@ -15,18 +16,21 @@ public class JobController : ControllerBase
     private readonly IRecurringJobManager recurringJobs;
     private readonly ILogger logger;
     private readonly IHubContext<JobHub, IHubClient> hubContext;
+    private readonly TrackingDbContext dbContext;
 
     public JobController(
         IBackgroundJobClient backgroundJobClient,
         IRecurringJobManager recurringJobManager,
         ILogger<JobController> logger,
-        IHubContext<JobHub, IHubClient> hubContext
+        IHubContext<JobHub, IHubClient> hubContext,
+        TrackingDbContext dbContext
     )
     {
         backgroundJobs = backgroundJobClient;
         recurringJobs = recurringJobManager;
         this.logger = logger;
         this.hubContext = hubContext;
+        this.dbContext = dbContext;
     }
 
     [HttpPost]
@@ -75,6 +79,24 @@ public class JobController : ControllerBase
         logger.LogInformation("recurring job");
         recurringJobs.AddOrUpdate<TestJob>("RecurringJob1TestJob", (x) => x.GetAsync("recurring"), "* * * * *");
         return Ok();
+    }
+
+
+    [HttpPost]
+    [Route("AddHealthCheck")]
+    public async Task<ActionResult> AddHealthCheck(string serverId, string url)
+    {
+        var entry = new HealthCheckEntry
+        {
+            serverId = serverId,
+            url = url,
+        };
+
+        logger.LogInformation("created entry {0}, {1}", entry.serverId, entry.url);
+
+        await dbContext.HealthCheck.AddAsync(entry);
+        await dbContext.SaveChangesAsync();
+        return Ok("created entry");
     }
 
     private void notifyClient()

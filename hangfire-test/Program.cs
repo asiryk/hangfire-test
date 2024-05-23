@@ -3,9 +3,12 @@ using Hangfire.MySql;
 using HangfireTest.SignalR;
 using HangfireTest.Jobs;
 using Hangfire.PostgreSql;
+using HangfireTest.Db;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var dbConnectionString = builder.Configuration.GetConnectionString("PostgreSQL");
 builder.Services.AddTransient<TestJob>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -23,6 +26,7 @@ builder.Services.AddCors(options =>
                 .AllowCredentials();
         });
 });
+builder.Services.AddDbContext<TrackingDbContext>();
 
 builder.Services.AddHangfire((sp, config) =>
 {
@@ -36,7 +40,7 @@ builder.Services.AddHangfire((sp, config) =>
     //     .UseStorage(mysqlStorage);
 
     // Postgres
-    var connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString("HangfirePostgres");
+    var connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString("PostgreSQL");
     config
         .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
         .UseSimpleAssemblyNameTypeSerializer()
@@ -53,6 +57,23 @@ builder.Services.AddHangfire((sp, config) =>
 builder.Services.AddHangfireServer();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        var context = services.GetRequiredService<TrackingDbContext>();
+        context.Database.Migrate();
+        logger.LogInformation("successfully migrated db");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "failed to migrade db");
+    }
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();

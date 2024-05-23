@@ -26,3 +26,10 @@ http://localhost:5555/swagger/index.html
 ## Dashboard
 
 http://localhost:5555/hangfire
+
+## Dotnet Migrations
+
+```shell
+# Instead InitialCreate use descriptive name
+dotnet ef migrations add InitialCreate
+```
